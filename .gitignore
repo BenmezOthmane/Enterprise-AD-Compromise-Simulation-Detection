@@ -1,0 +1,14 @@
+*.hash
+*.ntlm
+hashes.txt
+kerb_hashes.txt
+passwords.txt
+*.pcap
+*.cap
+*.pcapng
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.zip
+*.7z
+*.iso
