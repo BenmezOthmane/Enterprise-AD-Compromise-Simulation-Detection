@@ -94,8 +94,8 @@ Each attack phase will have a corresponding **custom Wazuh rule** with MITRE map
 ---
 
 ## Response (Planned)
-  - **Host Isolation:** Automated containment of compromised endpoints via Wazuh active response agents
   - **Alerting:** Real-time notifications triggered on critical AD security group changes
+  - **Host Isolation:** Automated containment of compromised endpoints via Wazuh active response agents
   - **Escalation:** Alert severity tiers mapped to response runbooks
 
 ## Hardening (Planned)
