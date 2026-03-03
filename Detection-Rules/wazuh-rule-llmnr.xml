@@ -1,8 +1,12 @@
-  <!-- LLMNR Poisoning — T1557.001 -->
+<!-- LLMNR Poisoning — T1557.001 -->
   
+<group name="local,">
+
   <rule id="100001" level="10">
     <if_group>windows</if_group>
     <field name="win.system.eventID">4776</field>
     <description>NTLM credential validation — possible LLMNR capture (T1557.001)</description>
     <mitre><id>T1557.001</id></mitre>
   </rule>
+
+</group>

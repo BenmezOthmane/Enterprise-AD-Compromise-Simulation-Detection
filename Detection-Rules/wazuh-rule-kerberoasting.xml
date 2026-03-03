@@ -1,5 +1,7 @@
-  <!-- Kerberoasting — T1558.003 -->
+<!-- Kerberoasting — T1558.003 -->
   
+<group name="local,">
+
   <rule id="100010" level="14">
     <if_group>windows</if_group>
     <field name="win.system.eventID">4769</field>
@@ -7,3 +9,5 @@
     <description>Kerberos TGS requested with RC4 — possible Kerberoasting (T1558.003)</description>
     <mitre><id>T1558.003</id></mitre>
   </rule>
+
+</group>

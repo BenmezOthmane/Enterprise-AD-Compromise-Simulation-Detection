@@ -1,4 +1,6 @@
-  <!-- Pass-the-Hash — T1550.002 -->
+<!-- Pass-the-Hash — T1550.002 -->
+
+<group name="local,">
 
   <rule id="100020" level="12">
     <if_group>windows</if_group>
@@ -7,3 +9,5 @@
     <description>NTLM Logon Type 9 — possible Pass-the-Hash (T1550.002)</description>
     <mitre><id>T1550.002</id></mitre>
   </rule>
+
+</group>

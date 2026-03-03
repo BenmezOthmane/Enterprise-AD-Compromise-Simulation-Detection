@@ -1,14 +1,14 @@
+<group name="local,">
+  
   <!-- Privilege Escalation — T1078.002 -->
-
   <rule id="100030" level="14">
     <if_group>windows</if_group>
     <field name="win.system.eventID">4728</field>
     <description>User added to privileged group — possible PrivEsc (T1078.002)</description>
     <mitre><id>T1078.002</id></mitre>
   </rule>
-  
-  <!-- DCSync — T1078.002 -->
 
+  <!-- DCSync — T1078.002 -->
   <rule id="100031" level="15">
     <if_group>windows</if_group>
     <field name="win.system.eventID">4662</field>
@@ -16,3 +16,5 @@
     <description>DCSync replication detected — Domain compromise likely (T1078.002)</description>
     <mitre><id>T1078.002</id></mitre>
   </rule>
+
+</group>
