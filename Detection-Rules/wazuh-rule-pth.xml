@@ -1,1 +1,9 @@
+  <!-- Pass-the-Hash — T1550.002 -->
 
+  <rule id="100020" level="12">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">4624</field>
+    <field name="win.eventdata.logonType">9</field>
+    <description>NTLM Logon Type 9 — possible Pass-the-Hash (T1550.002)</description>
+    <mitre><id>T1550.002</id></mitre>
+  </rule>
