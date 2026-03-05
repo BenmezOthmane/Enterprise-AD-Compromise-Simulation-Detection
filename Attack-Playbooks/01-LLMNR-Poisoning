@@ -1,1 +1,14 @@
+## Evidence Captured
 
+### Wazuh Alert
+- Rule ID: 100001 — triggered on DC01
+- Event ID: 4648 — Explicit credential use detected
+- Subject: Administrator attempting to connect to unknown host
+- Significance: DC01 detected suspicious use of Domain Admin credentials
+  captured via LLMNR poisoning — confirms domain-level credential exposure
+
+### Hash Capture
+- Tool: Responder
+- Hash Type: NTLMv2
+- Target User: testuser / Administrator
+- Result: Hash cracked via John → Password123
