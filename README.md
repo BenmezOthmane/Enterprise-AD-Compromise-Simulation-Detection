@@ -9,7 +9,7 @@ Every attack is mapped to **MITRE ATT&CK**, detected via **custom Wazuh rules**,
 
 ## Architecture Diagram
 
-![Architecture](Architecture.svg)
+![Architecture](Architecture/Architecture_Diagram.png)
 ```
                           ┌────────────────────────┐
                           │      pfSense FW        │
@@ -26,14 +26,18 @@ Every attack is mapped to **MITRE ATT&CK**, detected via **custom Wazuh rules**,
    │  │       SOC.local         │  │  │  └──────────────────────┘  │
    │  └────────────┬────────────┘  │  └────────────────────────────┘
    │               │               │
+   │  ┌────────────▼────────────┐  │           ┌────────────────────┐
+   │  │    Windows 10 Pro       │  │           │    HYBRID CLOUD    │
+   │  │    (Domain Joined)      │◄─┼──────────►│   Azure Entra ID   │
+   │  └────────────┬────────────┘  │           │    (Monitoring)    │
+   │               │               │           └────────────────────┘
    │  ┌────────────▼────────────┐  │
-   │  │    Windows 10 Pro       │  │
-   │  │    (Domain Joined)      │  │
-   │  └────────────┬────────────┘  │
-   │               │               │
-   │  ┌────────────▼────────────┐  │
-   │  │     Ubuntu Server       │  │
-   │  │  Wazuh SIEM (Docker)    │  │
+   │  │     Ubuntu Server       │  │           ┌────────────────────┐
+   │  │  ┌─────────────────┐    │  │           │   EXTERNAL DATA    │
+   │  │  │  Wazuh (Docker) │◄───┼──┼──────────►│  OFFSITE BACKUP    │
+   │  │  ├─────────────────┤    │  │           └────────────────────┘
+   │  │  │ Automated Backup│    │  │
+   │  │  └─────────────────┘    │  │
    │  └─────────────────────────┘  │
    └───────────────────────────────┘
 ```
@@ -50,7 +54,7 @@ Every attack is mapped to **MITRE ATT&CK**, detected via **custom Wazuh rules**,
 
 ## Attack Flow
 
-![Attack Flow](Attack-Flow.svg)
+![Attack Flow](Architecture/Attack_Flow.png)
 
 ---
 
